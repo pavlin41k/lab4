@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Design Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #filter-panel {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #filter-panel button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #filter-panel button:hover {
+            background-color: #0056b3;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            position: relative;
+            width: 200px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .card .description {
+            display: none;
+            padding: 10px;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card:hover .description {
+            display: block;
+        }
+
+        .subscribe-popup, .ad-modal {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .subscribe-popup button, .ad-modal button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .subscribe-popup button:hover, .ad-modal button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Панель фільтрів -->
+    <div id="filter-panel">
+        <button onclick="filterCards('all')">Усі</button>
+        <button onclick="filterCards('category1')">Категорія 1</button>
+        <button onclick="filterCards('category2')">Категорія 2</button>
+    </div>
+
+    <!-- Контейнер для карток -->
+    <div id="card-container" class="card-container">
+        <!-- Картки будуть завантажені за допомогою JavaScript -->
+    </div>
+
+    <!-- Немодальне вікно з пропозицією про підписку -->
+    <div id="subscribe-popup" class="subscribe-popup hidden">
+        <p>Підпишіться на наші повідомлення!</p>
+        <button onclick="subscribe()">Прийняти</button>
+        <button onclick="hidePopup()">Відхилити</button>
+    </div>
+
+    <!-- Модальне вікно з рекламою -->
+    <div id="ad-modal" class="ad-modal hidden">
+        <p>Реклама</p>
+        <p>Зачекайте <span id="countdown">5</span> секунд, щоб закрити це вікно</p>
+        <button id="close-ad-btn" class="hidden" onclick="closeAd()">Закрити</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = [
+                { category: 'category1', img: 'images/frst.jpg', description: 'Frontend - це частина веб-додатку, яка відповідає за інтерфейс користувача та взаємодію з ним. Вона включає в себе HTML, CSS і JavaScript для створення та стилізації веб-сторінок, а також використання фреймворків і бібліотек, таких як React або Angular, для покращення користувацького досвіду.' },
+                { category: 'category2', img: 'images/sec.jpg', description: 'Backend - це частина веб-додатку, яка працює на сервері і відповідає за логіку, обробку даних та управління базами даних. Вона включає в себе серверні мови програмування, такі як Python, Java, або Node.js, і фреймворки, такі як Django або Express, для обробки запитів від клієнта та забезпечення взаємодії з базами даних, такими як MySQL або MongoDB.' },
+                // Додайте більше карток відповідно до потреб
+            ];
+
+            const cardContainer = document.getElementById('card-container');
+
+            function loadCards(filter = 'all') {
+                cardContainer.innerHTML = '';
+                cards.filter(card => filter === 'all' || card.category === filter)
+                     .forEach(card => {
+                        const cardElement = document.createElement('div');
+                        cardElement.className = 'card';
+                        cardElement.innerHTML = `
+                            <img src="${card.img}" alt="${card.description}">
+                            <div class="description">${card.description}</div>
+                        `;
+                        cardContainer.appendChild(cardElement);
+                     });
+            }
+
+            loadCards();
+
+            window.filterCards = loadCards;
+
+            setTimeout(() => {
+                const subscribePopup = document.getElementById('subscribe-popup');
+                if (!localStorage.getItem('subscribed')) {
+                    subscribePopup.classList.remove('hidden');
+                }
+            }, 3000);
+
+            window.subscribe = function() {
+                localStorage.setItem('subscribed', 'true');
+                hidePopup();
+                alert('Дякуємо за приєднання!');
+            };
+
+            window.hidePopup = function() {
+                document.getElementById('subscribe-popup').classList.add('hidden');
+            };
+
+            setTimeout(() => {
+                const adModal = document.getElementById('ad-modal');
+                adModal.classList.remove('hidden');
+
+                let countdown = 5;
+                const countdownElement = document.getElementById('countdown');
+                const closeAdBtn = document.getElementById('close-ad-btn');
+
+                const countdownInterval = setInterval(() => {
+                    countdown -= 1;
+                    countdownElement.textContent = countdown;
+
+                    if (countdown === 0) {
+                        clearInterval(countdownInterval);
+                        closeAdBtn.classList.remove('hidden');
+                    }
+                }, 1000);
+            }, 5000);
+            
+            window.closeAd = function() {
+                document.getElementById('ad-modal').classList.add('hidden');
+            };
+        });
+    </script>
+</body>
+</html>
